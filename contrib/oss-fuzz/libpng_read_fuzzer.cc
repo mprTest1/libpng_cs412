@@ -222,9 +222,6 @@ int nparams;
 png_charpp params;
 if (png_get_pCAL(png_handler.png_ptr, png_handler.info_ptr, &purpose, &X0, &X1, &param_type, &nparams,
                  &units, &params)) {
-  png_free(png_handler.png_ptr, purpose);
-  png_free(png_handler.png_ptr, units);
-  png_free(png_handler.png_ptr, params);
 }
 
 // 获取sPLT（建议调色板）
@@ -246,8 +243,6 @@ png_bytep profile;
 png_uint_32 proflen;
 int compression_type1;
 if (png_get_iCCP(png_handler.png_ptr, png_handler.info_ptr, &name, &compression_type1, &profile, &proflen)) {
-  png_free(png_handler.png_ptr, name);
-  png_free(png_handler.png_ptr, profile);
 }
 
 // 获取颜色空间信息
