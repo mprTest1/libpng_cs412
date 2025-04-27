@@ -425,8 +425,8 @@ if (png_get_iCCP(png_handler.png_ptr, png_handler.info_ptr, &name, &compression_
     return 0;
   }
 
-  png_uint_32 width, height;
-  int bit_depth1, color_type1, interlace_type1, compression_type1;
+  
+  int bit_depth1, color_type1, interlace_type1;
   int filter_type1;
 
   if (!png_get_IHDR(png_handler.png_ptr, png_handler.info_ptr, &width,
@@ -453,7 +453,7 @@ if (png_get_iCCP(png_handler.png_ptr, png_handler.info_ptr, &name, &compression_
 
   png_read_update_info(png_handler.png_ptr, png_handler.info_ptr);
 
-  int channels = png_get_channels(png_handler.png_ptr, png_handler.info_ptr);
+  int channels1 = png_get_channels(png_handler.png_ptr, png_handler.info_ptr);
   // 获取颜色类型（再次触发png_get_IHDR）
   png_get_IHDR(png_handler.png_ptr, png_handler.info_ptr, &width, &height,
                &bit_depth1, &color_type1, &interlace_type1, &compression_type1, &filter_type1);
