@@ -155,9 +155,6 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   // Reading.
   png_read_info(png_handler.png_ptr, png_handler.info_ptr);
 
-// 获取有效性标志
-png_uint_32 valid = png_get_valid(png_handler.png_ptr, png_handler.info_ptr, PNG_INFO_ALL);
-
 // 获取行字节数和行指针数组
 size_t rowbytes = png_get_rowbytes(png_handler.png_ptr, png_handler.info_ptr);
 png_bytepp rows = png_get_rows(png_handler.png_ptr, png_handler.info_ptr);
@@ -205,11 +202,9 @@ if (png_get_pHYs(png_handler.png_ptr, png_handler.info_ptr, &res_x, &res_y, &uni
 
 // 获取sCAL（物理比例）
 int unit;
-char* scal_width = nullptr;
-char* scal_height = nullptr;
+double scal_width ;
+double scal_height ;
 if (png_get_sCAL(png_handler.png_ptr, png_handler.info_ptr, &unit, &scal_width, &scal_height)) {
-  png_free(png_handler.png_ptr, scal_width);
-  png_free(png_handler.png_ptr, scal_height);
 }
 
 // 获取oFFs（图像偏移）
@@ -222,9 +217,10 @@ if (png_get_oFFs(png_handler.png_ptr, png_handler.info_ptr, &offset_x, &offset_y
 // 获取pCAL（像素校准）
 png_charp purpose, units;
 png_int_32 X0, X1;
-png_byte param_type;
-png_charp params;
-if (png_get_pCAL(png_handler.png_ptr, png_handler.info_ptr, &purpose, &X0, &X1, &param_type,
+int param_type;
+int nparams;
+png_charpp params;
+if (png_get_pCAL(png_handler.png_ptr, png_handler.info_ptr, &purpose, &X0, &X1, &param_type, &nparams,
                  &units, &params)) {
   png_free(png_handler.png_ptr, purpose);
   png_free(png_handler.png_ptr, units);
@@ -234,7 +230,7 @@ if (png_get_pCAL(png_handler.png_ptr, png_handler.info_ptr, &purpose, &X0, &X1, 
 // 获取sPLT（建议调色板）
 png_sPLT_tp splt_ptr;
 int splt_count;
-if (png_get_sPLT(png_handler.png_ptr, png_handler.info_ptr, &splt_ptr, &splt_count)) {
+if (png_get_sPLT(png_handler.png_ptr, png_handler.info_ptr, &splt_ptr)) {
   // 触发sPLT处理
 }
 
@@ -248,15 +244,14 @@ if (png_get_tIME(png_handler.png_ptr, png_handler.info_ptr, &mod_time)) {
 png_charp name;
 png_bytep profile;
 png_uint_32 proflen;
-int compression_type;
-if (png_get_iCCP(png_handler.png_ptr, png_handler.info_ptr, &name, &compression_type, &profile, &proflen)) {
+int compression_type1;
+if (png_get_iCCP(png_handler.png_ptr, png_handler.info_ptr, &name, &compression_type1, &profile, &proflen)) {
   png_free(png_handler.png_ptr, name);
   png_free(png_handler.png_ptr, profile);
 }
 
 // 获取颜色空间信息
-png_color_space_icc_status_s icc_status;
-png_get_icc_status(png_handler.png_ptr, png_handler.info_ptr, &icc_status, nullptr, nullptr, nullptr);
+
 
   double gamma;
   if (png_get_gAMA(png_handler.png_ptr, png_handler.info_ptr, &gamma)) {
@@ -431,12 +426,12 @@ png_get_icc_status(png_handler.png_ptr, png_handler.info_ptr, &icc_status, nullp
   }
 
   png_uint_32 width, height;
-  int bit_depth, color_type, interlace_type, compression_type;
-  int filter_type;
+  int bit_depth1, color_type1, interlace_type1, compression_type1;
+  int filter_type1;
 
   if (!png_get_IHDR(png_handler.png_ptr, png_handler.info_ptr, &width,
-                    &height, &bit_depth, &color_type, &interlace_type,
-                    &compression_type, &filter_type)) {
+                    &height, &bit_depth1, &color_type1, &interlace_type1,
+                    &compression_type1, &filter_type1)) {
     PNG_CLEANUP
     return 0;
   }
@@ -461,7 +456,7 @@ png_get_icc_status(png_handler.png_ptr, png_handler.info_ptr, &icc_status, nullp
   int channels = png_get_channels(png_handler.png_ptr, png_handler.info_ptr);
   // 获取颜色类型（再次触发png_get_IHDR）
   png_get_IHDR(png_handler.png_ptr, png_handler.info_ptr, &width, &height,
-               &bit_depth, &color_type, &interlace_type, &compression_type, &filter_type);
+               &bit_depth1, &color_type1, &interlace_type1, &compression_type1, &filter_type1);
 
   png_handler.row_ptr = png_malloc(
       png_handler.png_ptr, png_get_rowbytes(png_handler.png_ptr,

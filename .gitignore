@@ -153,3 +153,4 @@ pngtest
 pngunknown
 pngvalid
 timepng
+contrib/oss-fuzz/png.h
