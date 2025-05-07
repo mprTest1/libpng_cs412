@@ -16,7 +16,6 @@ def generate_happy_path_png(filename="iccp_happy_path.png"):
 
     iccp_chunk = create_iccp_chunk(profile_name, compression_method, compressed_profile)
 
-    # 创建一个 RGB 图像，因为 ICC Profile 通常用于颜色管理
     sig, ihdr, idat, iend = create_minimal_png_structure(width=1, height=1, color_type=2, bit_depth=8)
 
     write_png(filename, [sig, ihdr, iccp_chunk, idat, iend])

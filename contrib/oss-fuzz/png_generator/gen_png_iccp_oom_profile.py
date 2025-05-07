@@ -23,11 +23,7 @@ def generate_oom_profile_iccp_png(filename="iccp_oom_profile.png"):
     uncompressed_icc_header += b'XYZ '  # PCS 'XYZ '
     # 用零填充剩余的头部空间，直到132字节
     uncompressed_icc_header += b'\x00' * (132 - len(uncompressed_icc_header))
-
-    # 实际要压缩的数据可以很小，只有头部中声明的大小对OOM测试重要。
-    # 但它必须足够有效以通过分配前的初步检查。
-    # 在头部之后包含一个最小的标签表结构。
-    # 标签数量: 0 (为了此OOM测试的简单性，避免需要标签数据)
+    
     uncompressed_icc_content_for_oom = uncompressed_icc_header + struct.pack('>I', 0) # 头部 + 0 个标签
 
     compressed_profile_data_for_oom = zlib.compress(uncompressed_icc_content_for_oom)
