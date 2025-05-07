@@ -93,6 +93,7 @@ void default_free(png_structp, png_voidp ptr) {
 }
 
 static const int kPngHeaderSize = 8;
+static const int kMinSizeForReadPngTest = kPngHeaderSize + sizeof(int);
 
 // Entry point for LibFuzzer.
 // Roughly follows the libpng book example:
@@ -466,6 +467,8 @@ if (png_get_iCCP(png_handler.png_ptr, png_handler.info_ptr, &name, &compression_
 
   png_read_end(png_handler.png_ptr, png_handler.end_info_ptr);
 
+
+
   PNG_CLEANUP
 
 #ifdef PNG_SIMPLIFIED_READ_SUPPORTED
@@ -482,6 +485,61 @@ if (png_get_iCCP(png_handler.png_ptr, png_handler.info_ptr, &name, &compression_
   std::vector<png_byte> buffer(PNG_IMAGE_SIZE(image));
   png_image_finish_read(&image, NULL, buffer.data(), 0, NULL);
 #endif
+if (size >= kMinSizeForReadPngTest) { // 确保数据足够进行 png_read_png 测试
+    png_structp png_ptr_read_png_test = nullptr;
+    png_infop info_ptr_read_png_test = nullptr;
+    // BufStateForReadPng buf_state_read_png_test; // 在下面初始化
 
+    // 从 Fuzzer 输入中提取 transforms 参数
+    int fuzz_transforms = 0;
+    // 确保从原始 'data' 和 'size' 操作，而不是可能被上面逻辑修改过的副本
+    // (在这个例子中，上面的逻辑主要使用 v.data() 或 png_handler.buf_state)
+    // 我们假设 png_read_png 测试也想从 data 的末尾取 transform
+    // 或者定义一个字节来决定是否执行此测试，并从哪里取 transform
+    const uint8_t* png_data_for_read_png_test = data;
+    size_t size_for_read_png_test_data = size;
+
+    // 简单示例：从数据末尾提取 transforms
+    if (size_for_read_png_test_data > sizeof(int)) { // 至少能容纳一个 transform 和一点数据
+        memcpy(&fuzz_transforms, png_data_for_read_png_test + size_for_read_png_test_data - sizeof(int), sizeof(int));
+        size_for_read_png_test_data -= sizeof(int); // 更新 PNG 数据的实际大小
+    } else {
+        fuzz_transforms = PNG_TRANSFORM_IDENTITY;
+    }
+
+    // 再次检查PNG签名，因为我们是独立处理
+    if (size_for_read_png_test_data < kPngHeaderSize || png_sig_cmp(png_data_for_read_png_test, 0, kPngHeaderSize)) {
+        // 如果数据在调整后不足，或不再是PNG，则跳过此测试块
+    } else {
+        png_ptr_read_png_test = png_create_read_struct(PNG_LIBPNG_VER_STRING, nullptr, nullptr, nullptr);
+        if (png_ptr_read_png_test) {
+            info_ptr_read_png_test = png_create_info_struct(png_ptr_read_png_test);
+            if (info_ptr_read_png_test) {
+                // 使用为 png_read_png 测试准备的辅助函数
+                png_set_mem_fn(png_ptr_read_png_test, nullptr, limited_malloc, default_free);
+                png_set_crc_action(png_ptr_read_png_test, PNG_CRC_QUIET_USE, PNG_CRC_QUIET_USE);
+#ifdef PNG_IGNORE_ADLER32
+                png_set_option(png_ptr_read_png_test, PNG_IGNORE_ADLER32, PNG_OPTION_ON);
+#endif
+                BufState buf_state_read_png_test_local; //局部变量
+                buf_state_read_png_test_local.data = png_data_for_read_png_test;
+                buf_state_read_png_test_local.bytes_left = size_for_read_png_test_data;
+                png_set_read_fn(png_ptr_read_png_test, &buf_state_read_png_test_local, user_read_data);
+                // png_set_sig_bytes 对于 png_read_png 不是必需的，因为它会自己处理
+
+                if (setjmp(png_jmpbuf(png_ptr_read_png_test))) {
+                    PNG_CLEANUP;
+                } else {
+                    // 核心调用
+                    png_read_png(png_ptr_read_png_test, info_ptr_read_png_test, fuzz_transforms, nullptr);
+                    PNG_CLEANUP;
+                }
+            } else { // info_ptr_read_png_test 创建失败
+                png_destroy_read_struct(&png_ptr_read_png_test, (png_infopp)nullptr, (png_infopp)nullptr);
+                png_ptr_read_png_test = nullptr;
+            }
+        }
+    }
+  }
   return 0;
 }
