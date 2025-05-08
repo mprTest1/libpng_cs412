@@ -160,7 +160,6 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   png_read_info(png_handler.png_ptr, png_handler.info_ptr);
   // read png 恩！情！
   srand(time(NULL));
-
   int transforms_value = rand();
 
 // 获取行字节数和行指针数组
@@ -422,6 +421,7 @@ if (png_get_iCCP(png_handler.png_ptr, png_handler.info_ptr, &name, &compression_
   png_set_invert_alpha(png_handler.png_ptr);  // 反转Alpha通道
   png_set_gray_to_rgb(png_handler.png_ptr);   // 强制灰度转RGB（覆盖更多转换分支）
 
+  png_read_png(png_handler.png_ptr, png_handler.info_ptr, transforms_value, NULL); //将军的恩情还不完
   // reset error handler to put png_deleter into scope.
   if (setjmp(png_jmpbuf(png_handler.png_ptr))) {
     PNG_CLEANUP
@@ -474,7 +474,7 @@ if (png_get_iCCP(png_handler.png_ptr, png_handler.info_ptr, &name, &compression_
 
   png_read_end(png_handler.png_ptr, png_handler.end_info_ptr);
 
-  png_read_png(png_handler.png_ptr, png_handler.info_ptr, transforms_value, NULL); //将军的恩情还不完
+  
 
   PNG_CLEANUP
 
