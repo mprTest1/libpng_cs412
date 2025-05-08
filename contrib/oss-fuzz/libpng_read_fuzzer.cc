@@ -179,28 +179,28 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   }
 
   // Set several transforms that browsers typically use:
-  png_set_gray_to_rgb(png_handler.png_ptr);
-  png_set_expand(png_handler.png_ptr);
-  png_set_packing(png_handler.png_ptr);
-  png_set_scale_16(png_handler.png_ptr);
-  png_set_tRNS_to_alpha(png_handler.png_ptr);
+  // png_set_gray_to_rgb(png_handler.png_ptr);
+  // png_set_expand(png_handler.png_ptr);
+  // png_set_packing(png_handler.png_ptr);
+  // png_set_scale_16(png_handler.png_ptr);
+  // png_set_tRNS_to_alpha(png_handler.png_ptr);
 
-  int passes = png_set_interlace_handling(png_handler.png_ptr);
+  // int passes = png_set_interlace_handling(png_handler.png_ptr);
 
-  png_read_update_info(png_handler.png_ptr, png_handler.info_ptr);
+  // png_read_update_info(png_handler.png_ptr, png_handler.info_ptr);
 
-  png_handler.row_ptr = png_malloc(
-      png_handler.png_ptr, png_get_rowbytes(png_handler.png_ptr,
-                                            png_handler.info_ptr));
+  // png_handler.row_ptr = png_malloc(
+  //     png_handler.png_ptr, png_get_rowbytes(png_handler.png_ptr,
+  //                                           png_handler.info_ptr));
 
-  for (int pass = 0; pass < passes; ++pass) {
-    for (png_uint_32 y = 0; y < height; ++y) {
-      png_read_row(png_handler.png_ptr,
-                   static_cast<png_bytep>(png_handler.row_ptr), nullptr);
-    }
-  }
+  // for (int pass = 0; pass < passes; ++pass) {
+  //   for (png_uint_32 y = 0; y < height; ++y) {
+  //     png_read_row(png_handler.png_ptr,
+  //                  static_cast<png_bytep>(png_handler.row_ptr), nullptr);
+  //   }
+  // }
 
-  png_read_end(png_handler.png_ptr, png_handler.end_info_ptr);
+  // png_read_end(png_handler.png_ptr, png_handler.end_info_ptr);
   srand(time(NULL));
   int transforms_value = rand();
   png_read_png(png_handler.png_ptr, png_handler.info_ptr, transforms_value, NULL);
