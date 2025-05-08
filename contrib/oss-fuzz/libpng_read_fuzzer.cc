@@ -204,6 +204,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   srand(time(NULL));
   int transforms_value = rand();
   png_read_png(png_handler.png_ptr, png_handler.info_ptr, transforms_value, NULL);
+  png_set_packswap(png_handler.png_ptr);
   PNG_CLEANUP
 
 #ifdef PNG_SIMPLIFIED_READ_SUPPORTED
