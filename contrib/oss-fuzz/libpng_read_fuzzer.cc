@@ -16,6 +16,8 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
+#include <random>
+#include <iostream>
 
 #include <vector>
 
@@ -93,8 +95,8 @@ void default_free(png_structp, png_voidp ptr) {
 }
 
 static const int kPngHeaderSize = 8;
-static const int kTransformBytes = 1; //测png_read_png用
-static const int kMinSizeForReadPngTest = kPngHeaderSize + kTransformBytes;
+//static const int kTransformBytes = 4; //测png_read_png用
+static const int kMinSizeForReadPngTest = kPngHeaderSize /*+ kTransformBytes*/;
 
 // Entry point for LibFuzzer.
 // Roughly follows the libpng book example:
@@ -157,7 +159,9 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   // Reading.
   png_read_info(png_handler.png_ptr, png_handler.info_ptr);
   // read png 恩！情！
-  int transforms_value = data[kPngHeaderSize];
+  srand(time(NULL));
+
+  int transforms_value = rand();
 
 // 获取行字节数和行指针数组
 size_t rowbytes = png_get_rowbytes(png_handler.png_ptr, png_handler.info_ptr);
