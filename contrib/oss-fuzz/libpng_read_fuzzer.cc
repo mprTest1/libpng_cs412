@@ -161,6 +161,8 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
     return 0;
   }
 
+  const png_uint_32 kMaxImageSize = 1 << 20;
+  const png_uint_32 kMaxHeight = 1 << 10;
   png_uint_32 width, height;
   int bit_depth, color_type, interlace_type, compression_type;
   int filter_type;
@@ -172,8 +174,12 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
     return 0;
   }
 
-  // This is going to be too slow.
-  if (width && height > 100000000 / width) {
+  // too large picture -> OOM
+  if ((uint64_t)width * height > kMaxImageSize) {
+    PNG_CLEANUP
+    return 0;
+  }
+  if (height > kMaxHeight) {
     PNG_CLEANUP
     return 0;
   }
@@ -201,10 +207,11 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   // }
 
   // png_read_end(png_handler.png_ptr, png_handler.end_info_ptr);
-  srand(time(NULL));
-  int transforms_value = rand();
+  
+  // valid png starts with 8-byte header and ends with IEND chunk of 12 bytes (both deterministic)
+  // take data[-16:-12] as transform for reproducibility
+  int transforms_value = size >= 24 ? (*(int*)&data[size-16]) : ~0;
   png_read_png(png_handler.png_ptr, png_handler.info_ptr, transforms_value, NULL);
-  png_set_packswap(png_handler.png_ptr);
   PNG_CLEANUP
 
 #ifdef PNG_SIMPLIFIED_READ_SUPPORTED
@@ -217,9 +224,21 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
     return 0;
   }
 
-  image.format = PNG_FORMAT_RGBA;
+  // random format from data for reproducibility
+  image.format = size >= 28 ? (*(int*)&data[size-20]) : PNG_FORMAT_RGBA;
+  const size_t kColorMapSize = 256 * 4;
+  // Do we need to take color & colormap from the fuzzed input?
+  // if (display->background == NULL /* no way to remove it */)
+  //  png_error(png_ptr,
+  //      "background color must be supplied to remove alpha/transparency");
+  // TODO: random colormap and background color
+  png_color background_color = {1, 2, 3};
+  png_uint_16 colormap[256*4] = {0};
+  for (size_t i = 0; i < kColorMapSize; i++)
+    colormap[i] = i;
   std::vector<png_byte> buffer(PNG_IMAGE_SIZE(image));
-  png_image_finish_read(&image, NULL, buffer.data(), 0, NULL);
+  png_image_finish_read(&image, &background_color, buffer.data(), 0, colormap);
+  png_image_free(&image);
 #endif
 
   return 0;
