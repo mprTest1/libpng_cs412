@@ -38,13 +38,13 @@ make -j$(nproc) libpng16.la
 
 # build libpng_read_fuzzer.
 $CXX $CXXFLAGS -std=c++11 -I. \
-     $SRC/libpng/contrib/oss-fuzz/libpng_read_fuzzer.cc \
+     $SRC/libpng_cs412/contrib/oss-fuzz/libpng_read_fuzzer.cc \
      -o $OUT/libpng_read_fuzzer \
      -lFuzzingEngine .libs/libpng16.a -lz
 
 # add seed corpus.
-find $SRC/libpng -name "*.png" | grep -v crashers | \
+find $SRC/libpng_cs412 -name "*.png" | grep -v crashers | \
      xargs zip $OUT/libpng_read_fuzzer_seed_corpus.zip
 
-cp $SRC/libpng/contrib/oss-fuzz/*.dict \
-     $SRC/libpng/contrib/oss-fuzz/*.options $OUT/
+cp $SRC/libpng_cs412/contrib/oss-fuzz/*.dict \
+     $SRC/libpng_cs412/contrib/oss-fuzz/*.options $OUT/
