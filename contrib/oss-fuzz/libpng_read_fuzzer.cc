@@ -155,57 +155,6 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   // Reading.
   png_read_info(png_handler.png_ptr, png_handler.info_ptr);
 
-  double gamma;
-  if (png_get_gAMA(png_handler.png_ptr, png_handler.info_ptr, &gamma)) {
-    // 可记录Gamma值，此处仅用于触发覆盖率
-  }
-
-  // 获取调色板信息（触发png_get_PLTE）
-  png_colorp palette;
-  int num_palette;
-  if (png_get_PLTE(png_handler.png_ptr, png_handler.info_ptr, &palette, &num_palette)) {
-    // 可处理调色板，此处仅用于触发覆盖率
-  }
-
-  // 获取透明色信息（触发png_get_tRNS）
-  png_bytep trans_alpha;
-  int num_trans;
-  png_color_16p trans_color;
-  if (png_get_tRNS(png_handler.png_ptr, png_handler.info_ptr, &trans_alpha, &num_trans, &trans_color)) {
-    // 可处理透明通道，此处仅用于触发覆盖率
-  }
-
-  // 获取文本信息（触发png_get_text）
-  png_textp text_ptr;
-  int num_text;
-  if (png_get_text(png_handler.png_ptr, png_handler.info_ptr, &text_ptr, &num_text)) {
-    // 可处理文本块，此处仅用于触发覆盖率
-  }
-
-  // 获取背景色（触发png_get_bKGD）
-  png_color_16p background;
-  if (png_get_bKGD(png_handler.png_ptr, png_handler.info_ptr, &background)) {
-    // 可记录背景色，此处仅用于触发覆盖率
-  }
-
-  // --------------------- 新增：设置更多转换选项触发pngtrans.c逻辑 ---------------------
-  // 设置背景色混合（触发pngtrans.c中的背景处理逻辑）
-  png_color_16 bg_color = {0, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF};
-  png_set_background(png_handler.png_ptr, &bg_color, PNG_BACKGROUND_GAMMA_SCREEN, 0, 1.0);
-
-  // 启用BGR像素格式（触发颜色空间转换）
-  png_set_bgr(png_handler.png_ptr);
-
-  // 设置Alpha预乘模式（触发Alpha处理逻辑）
-  png_set_alpha_mode(png_handler.png_ptr, PNG_ALPHA_PREMULTIPLIED, PNG_DEFAULT_sRGB);
-
-  // 启用像素打包（针对低比特深度图像）
-  png_set_packing(png_handler.png_ptr);
-
-  // 其他可能影响pngtrans.c的选项
-  png_set_invert_alpha(png_handler.png_ptr);  // 反转Alpha通道
-  png_set_gray_to_rgb(png_handler.png_ptr);   // 强制灰度转RGB（覆盖更多转换分支）
-
   // reset error handler to put png_deleter into scope.
   if (setjmp(png_jmpbuf(png_handler.png_ptr))) {
     PNG_CLEANUP
@@ -239,11 +188,6 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   int passes = png_set_interlace_handling(png_handler.png_ptr);
 
   png_read_update_info(png_handler.png_ptr, png_handler.info_ptr);
-
-  int channels = png_get_channels(png_handler.png_ptr, png_handler.info_ptr);
-  // 获取颜色类型（再次触发png_get_IHDR）
-  png_get_IHDR(png_handler.png_ptr, png_handler.info_ptr, &width, &height,
-               &bit_depth, &color_type, &interlace_type, &compression_type, &filter_type);
 
   png_handler.row_ptr = png_malloc(
       png_handler.png_ptr, png_get_rowbytes(png_handler.png_ptr,
