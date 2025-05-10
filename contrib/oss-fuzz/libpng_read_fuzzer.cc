@@ -211,7 +211,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   image.version = PNG_IMAGE_VERSION;
 
   // random format from data for reproducibility
-  image.format = size >= 28 ? (*(int*)&data[size-20]) : PNG_FORMAT_RGBA;
+  image.format = (size >= 28 ? (*(int*)&data[size-20]) : PNG_FORMAT_RGBA) & PNG_FORMAT_FLAG_COLORMAP;
   const size_t kColorMapSize = 256 * 4;
   // Do we need to take color & colormap from the fuzzed input?
   // if (display->background == NULL /* no way to remove it */)
