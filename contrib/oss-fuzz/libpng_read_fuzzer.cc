@@ -222,7 +222,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   for (size_t i = 0; i < kColorMapSize; i++)
     colormap[i] = i;
   std::vector<png_byte> buffer(PNG_IMAGE_SIZE(image));
-  png_image_finish_read(&image, NULL, buffer.data(), 0, NULL);
+  // png_image_finish_read(&image, NULL, buffer.data(), 0, NULL);
   png_image_finish_read(&image, &color, buffer.data(), 0, colormap);
 #endif
 
