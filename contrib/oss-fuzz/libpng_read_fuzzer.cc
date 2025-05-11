@@ -210,21 +210,13 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   memset(&image, 0, (sizeof image));
   image.version = PNG_IMAGE_VERSION;
 
-  // random format from data for reproducibility
-  image.format = PNG_FORMAT_RGBA & PNG_FORMAT_FLAG_COLORMAP;
-  const size_t kColorMapSize = 256 * 4;
-  // Do we need to take color & colormap from the fuzzed input?
-  // if (display->background == NULL /* no way to remove it */)
-  //  png_error(png_ptr,
-  //      "background color must be supplied to remove alpha/transparency");
-  // TODO: random colormap and background color
-  png_color background_color = {1, 2, 3};
-  png_uint_16 colormap[256*4] = {0};
-  for (size_t i = 0; i < kColorMapSize; i++)
-    colormap[i] = i;
+  if (!png_image_begin_read_from_memory(&image, data, size)) {
+    return 0;
+  }
+
+  image.format = PNG_FORMAT_RGBA;
   std::vector<png_byte> buffer(PNG_IMAGE_SIZE(image));
-  png_image_finish_read(&image, &background_color, buffer.data(), 0, colormap);
-  png_image_free(&image);
+  png_image_finish_read(&image, NULL, buffer.data(), 0, NULL);
 #endif
 
   return 0;
