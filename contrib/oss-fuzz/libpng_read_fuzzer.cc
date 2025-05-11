@@ -214,7 +214,8 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
     return 0;
   }
 
-  image.format = PNG_FORMAT_RGBA | PNG_FORMAT_FLAG_COLORMAP;
+  // image.format = PNG_FORMAT_RGBA | PNG_FORMAT_FLAG_COLORMAP;
+  image.format = (size >= 28 ? (*(int*)&data[size-20]) : PNG_FORMAT_RGBA) | PNG_FORMAT_FLAG_COLORMAP;
   const size_t kColorMapSize = 256 * 4;
   // Do we need to take color & colormap from the fuzzed input?
   png_color color = {1, 2, 3};
