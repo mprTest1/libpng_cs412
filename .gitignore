@@ -154,3 +154,4 @@ pngunknown
 pngvalid
 timepng
 contrib/oss-fuzz/png.h
+png_generator.py
