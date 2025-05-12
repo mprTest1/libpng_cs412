@@ -664,10 +664,10 @@ if __name__ == '__main__':
         'sBIT', 'gAMA', 'cHRM', 'sRGB', 'cICP', 'eXIf', 'iCCP', 'sPLT', 
         'hIST', 'tRNS', 'bKGD', 'pHYs', 'sTER', 'tEXt', 'zTXt', 'iTXt', 'tIME', 'dSIG' 
     ]
-    parent_path = ''
+    parent_path = '.'
     if len(sys.argv) > 1:
         parent_path = sys.argv[1]
-    parent_path += randPNG_save_path
+    parent_path = f'{parent_path}/{randPNG_save_path}'
     # create directory to save seeds
     if not os.path.exists(parent_path):
         os.mkdir(parent_path)
