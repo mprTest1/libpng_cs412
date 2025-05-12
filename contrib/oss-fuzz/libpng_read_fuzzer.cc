@@ -69,14 +69,11 @@ struct PngObjectHandler {
 void user_read_data(png_structp png_ptr, png_bytep data, size_t length) {
   BufState* buf_state = static_cast<BufState*>(png_get_io_ptr(png_ptr));
   if (length > buf_state->bytes_left) {
-    // png_error(png_ptr, "read error");
-    buf_state->data += buf_state->bytes_left;
-    buf_state->bytes_left = 0;
-  } else {
-    memcpy(data, buf_state->data, length);
-    buf_state->bytes_left -= length;
-    buf_state->data += length;
+    png_error(png_ptr, "read error");
   }
+  memcpy(data, buf_state->data, length);
+  buf_state->bytes_left -= length;
+  buf_state->data += length;
 }
 
 void* limited_malloc(png_structp, png_alloc_size_t size) {
@@ -175,15 +172,8 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
     return 0;
   }
 
-  // too large picture -> OOM
-  const png_uint_32 kMaxImageSize = 1 << 20;
-  const png_uint_32 kMaxHeight = 1 << 10;
-  if ((uint64_t)width * height > kMaxImageSize) {
-    PNG_CLEANUP
-    return 0;
-  }
-  // height = #malloc, too many malloc undesirable
-  if (height > kMaxHeight) {
+  // This is going to be too slow.
+  if (width && height > 100000000 / width) {
     PNG_CLEANUP
     return 0;
   }
