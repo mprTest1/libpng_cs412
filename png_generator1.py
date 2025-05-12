@@ -204,7 +204,7 @@ class PNG:
             now = datetime.datetime.utcnow()
             chunk_data = struct.pack('>HBBBBB', now.year, now.month, now.day, now.hour, now.minute, now.second)
         elif validity_code == 1: 
-            chunk_data = struct.pack('>HBBBB', 2023, 13, 32, 25, 61, 62) 
+            chunk_data = struct.pack('>HBBBBB', 2023, 13, 32, 25, 61, 62) 
         else:
             raise ValueError(f"Unknown validity_code '{validity_code}' for tIME")
         if chunk_data is not None:
