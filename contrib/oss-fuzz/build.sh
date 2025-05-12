@@ -42,6 +42,8 @@ $CXX $CXXFLAGS -std=c++11 -I. \
      -o $OUT/libpng_read_fuzzer \
      -lFuzzingEngine .libs/libpng16.a -lz
 
+python3 png_generator1.py  "$SRC/libpng_cs412"
+
 # add seed corpus.
 find $SRC/libpng_cs412 -name "*.png" | grep -v crashers | \
      xargs zip $OUT/libpng_read_fuzzer_seed_corpus.zip
