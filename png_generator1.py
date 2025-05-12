@@ -4,6 +4,7 @@ import random
 import datetime # Added for tIME chunk
 import os
 import glob
+import sys
 
 randPNG_save_path = 'randPNG_seeds'
 
@@ -663,14 +664,18 @@ if __name__ == '__main__':
         'sBIT', 'gAMA', 'cHRM', 'sRGB', 'cICP', 'eXIf', 'iCCP', 'sPLT', 
         'hIST', 'tRNS', 'bKGD', 'pHYs', 'sTER', 'tEXt', 'zTXt', 'iTXt', 'tIME', 'dSIG' 
     ]
+    parent_path = ''
+    if len(sys.argv) > 1:
+        parent_path = sys.argv[1]
+    parent_path += randPNG_save_path
     # create directory to save seeds
-    if not os.path.exists(randPNG_save_path):
-        os.mkdir(randPNG_save_path)
-        print(f'Creating directory {randPNG_save_path} to save random seeds')
+    if not os.path.exists(parent_path):
+        os.mkdir(parent_path)
+        print(f'Creating directory {parent_path} to save random seeds')
     # remove files in the path if any
-    for f in glob.glob(f'{randPNG_save_path}/*'):
+    for f in glob.glob(f'{parent_path}/*'):
         os.remove(f)
-    print(f'Saving seeds to {randPNG_save_path}')
+    print(f'Saving seeds to {parent_path}')
     for _ in range(10):
         random_crit_config = {name: random.choice([0, 1]) for name in critical_chunk_names}
         random_anc_config = {name: random.choice([0, 1, 2]) for name in ancillary_chunk_names}
@@ -679,7 +684,7 @@ if __name__ == '__main__':
 
         output_filename = "randPNG_"+"".join(str(value) for value in random_crit_config.values())+"-"+"".join(str(value) for value in random_anc_config.values())+".png"
         try:
-            with open(f'{randPNG_save_path}/{output_filename}', "wb") as f:
+            with open(f'{parent_path}/{output_filename}', "wb") as f:
                 f.write(generated_png.data)
             print(f"\nSave as '{output_filename}'")
         except IOError as e:
