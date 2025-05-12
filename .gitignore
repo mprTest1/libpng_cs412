@@ -155,3 +155,4 @@ pngvalid
 timepng
 contrib/oss-fuzz/png.h
 png_generator.py
+randPNG_seeds
