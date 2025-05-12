@@ -630,9 +630,9 @@ class PNG:
                 uncompressed_image_data = b'\x00' 
 
             try:
-                chunk_data = zlib.compress(uncompressed_image_data, wbits=-zlib.MAX_WBITS)
+                chunk_data = zlib.compress(uncompressed_image_data)
             except AttributeError: 
-                chunk_data = zlib.compress(uncompressed_image_data, wbits=-15)
+                chunk_data = zlib.compress(uncompressed_image_data)
             except zlib.error as e:
                 print(f"Zlib compression error for IDAT: {e}. Data: {uncompressed_image_data!r}")
                 chunk_data = b"zlib_error_placeholder" 
@@ -664,7 +664,7 @@ if __name__ == '__main__':
         'sBIT', 'gAMA', 'cHRM', 'sRGB', 'cICP', 'eXIf', 'iCCP', 'sPLT', 
         'hIST', 'tRNS', 'bKGD', 'pHYs', 'sTER', 'tEXt', 'zTXt', 'iTXt', 'tIME', 'dSIG' 
     ]
-    parent_path = '.'
+    parent_path = ''
     if len(sys.argv) > 1:
         parent_path = sys.argv[1]
     parent_path = f'{parent_path}/{randPNG_save_path}'
