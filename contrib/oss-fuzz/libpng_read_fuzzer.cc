@@ -69,11 +69,14 @@ struct PngObjectHandler {
 void user_read_data(png_structp png_ptr, png_bytep data, size_t length) {
   BufState* buf_state = static_cast<BufState*>(png_get_io_ptr(png_ptr));
   if (length > buf_state->bytes_left) {
-    png_error(png_ptr, "read error");
+    // png_error(png_ptr, "read error");
+    buf_state->data += buf_state->bytes_left;
+    buf_state->bytes_left = 0;
+  } else {
+    memcpy(data, buf_state->data, length);
+    buf_state->bytes_left -= length;
+    buf_state->data += length;
   }
-  memcpy(data, buf_state->data, length);
-  buf_state->bytes_left -= length;
-  buf_state->data += length;
 }
 
 void* limited_malloc(png_structp, png_alloc_size_t size) {
