@@ -69,14 +69,11 @@ struct PngObjectHandler {
 void user_read_data(png_structp png_ptr, png_bytep data, size_t length) {
   BufState* buf_state = static_cast<BufState*>(png_get_io_ptr(png_ptr));
   if (length > buf_state->bytes_left) {
-    // png_error(png_ptr, "read error");
-    buf_state->data += buf_state->bytes_left;
-    buf_state->bytes_left = 0;
-  } else {
-    memcpy(data, buf_state->data, length);
-    buf_state->bytes_left -= length;
-    buf_state->data += length;
+    png_error(png_ptr, "read error");
   }
+  memcpy(data, buf_state->data, length);
+  buf_state->bytes_left -= length;
+  buf_state->data += length;
 }
 
 void* limited_malloc(png_structp, png_alloc_size_t size) {
@@ -175,15 +172,8 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
     return 0;
   }
 
-  // too large picture -> OOM
-  const png_uint_32 kMaxImageSize = 1 << 20;
-  const png_uint_32 kMaxHeight = 1 << 10;
-  if ((uint64_t)width * height > kMaxImageSize) {
-    PNG_CLEANUP
-    return 0;
-  }
-  // height = #malloc, too many malloc undesirable
-  if (height > kMaxHeight) {
+  // This is going to be too slow.
+  if (width && height > 100000000 / width) {
     PNG_CLEANUP
     return 0;
   }
@@ -203,17 +193,9 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
     return 0;
   }
 
-  // image.format = PNG_FORMAT_RGBA | PNG_FORMAT_FLAG_COLORMAP;
-  image.format = (size >= 28 ? (*(int*)&data[size-20]) : PNG_FORMAT_RGBA) | PNG_FORMAT_FLAG_COLORMAP;
-  const size_t kColorMapSize = 256 * 4;
-  // Do we need to take color & colormap from the fuzzed input?
-  png_color color = {1, 2, 3};
-  png_uint_16 colormap[256*4] = {0};
-  for (size_t i = 0; i < kColorMapSize; i++)
-    colormap[i] = i;
+  image.format = PNG_FORMAT_RGBA;
   std::vector<png_byte> buffer(PNG_IMAGE_SIZE(image));
-  // png_image_finish_read(&image, NULL, buffer.data(), 0, NULL);
-  png_image_finish_read(&image, &color, buffer.data(), 0, colormap);
+  png_image_finish_read(&image, NULL, buffer.data(), 0, NULL);
 #endif
 
   return 0;
