@@ -48,3 +48,5 @@ find $SRC/libpng_cs412 -name "*.png" | grep -v crashers | \
 
 cp $SRC/libpng_cs412/contrib/oss-fuzz/*.dict \
      $SRC/libpng_cs412/contrib/oss-fuzz/*.options $OUT/
+
+which python3
