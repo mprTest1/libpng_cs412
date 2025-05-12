@@ -2,6 +2,10 @@ import zlib
 import struct
 import random 
 import datetime # Added for tIME chunk
+import os
+import glob
+
+randPNG_save_path = 'randPNG_seeds'
 
 class PNG:
     def __init__(self, critical_chunk_config=None, ancillary_chunk_config=None):
@@ -204,7 +208,7 @@ class PNG:
             now = datetime.datetime.utcnow()
             chunk_data = struct.pack('>HBBBBB', now.year, now.month, now.day, now.hour, now.minute, now.second)
         elif validity_code == 1: 
-            chunk_data = struct.pack('>HBBBB', 2023, 13, 32, 25, 61, 62) 
+            chunk_data = struct.pack('>HBBBBB', 2023, 13, 32, 25, 61, 62) 
         else:
             raise ValueError(f"Unknown validity_code '{validity_code}' for tIME")
         if chunk_data is not None:
@@ -659,6 +663,14 @@ if __name__ == '__main__':
         'sBIT', 'gAMA', 'cHRM', 'sRGB', 'cICP', 'eXIf', 'iCCP', 'sPLT', 
         'hIST', 'tRNS', 'bKGD', 'pHYs', 'sTER', 'tEXt', 'zTXt', 'iTXt', 'tIME', 'dSIG' 
     ]
+    # create directory to save seeds
+    if not os.path.exists(randPNG_save_path):
+        os.mkdir(randPNG_save_path)
+        print(f'Creating directory {randPNG_save_path} to save random seeds')
+    # remove files in the path if any
+    for f in glob.glob(f'{randPNG_save_path}/*'):
+        os.remove(f)
+    print(f'Saving seeds to {randPNG_save_path}')
     for _ in range(10):
         random_crit_config = {name: random.choice([0, 1]) for name in critical_chunk_names}
         random_anc_config = {name: random.choice([0, 1, 2]) for name in ancillary_chunk_names}
@@ -667,7 +679,7 @@ if __name__ == '__main__':
 
         output_filename = "randPNG_"+"".join(str(value) for value in random_crit_config.values())+"-"+"".join(str(value) for value in random_anc_config.values())+".png"
         try:
-            with open(output_filename, "wb") as f:
+            with open(f'{randPNG_save_path}/{output_filename}', "wb") as f:
                 f.write(generated_png.data)
             print(f"\nSave as '{output_filename}'")
         except IOError as e:
