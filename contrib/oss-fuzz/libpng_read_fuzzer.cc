@@ -172,11 +172,10 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
     return 0;
   }
 
-  // This is going to be too slow.
-  if (width && height > 100000000 / width) {
-    PNG_CLEANUP
-    return 0;
-  }
+  const size_t kMaxImageSize = 1 << 20;
+  const size_t kMaxHeight = 1 << 10;
+  if ((uint64_t)width * height > kMaxImageSize) return 0;
+  if (height > kMaxHeight) return 0;
 
   int transforms_value = size >= 24 ? (*(int*)&data[size-16]) : ~0;
   png_read_png(png_handler.png_ptr, png_handler.info_ptr, transforms_value, NULL);
