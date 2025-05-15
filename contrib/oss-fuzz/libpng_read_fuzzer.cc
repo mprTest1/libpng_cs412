@@ -172,6 +172,12 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
     return 0;
   }
 
+  // Because of the potential transformations that could be performed
+  // due to our modification to the harness, it becomes necessary for us
+  // to additionally limit #rows in the input image (i.e. #malloc) to 
+  // ensure the stability of the fuzzing environment.
+  // Size check requirements from libpng-proto:
+  // https://github.com/google/oss-fuzz/blob/c8a9d0f7b453102115883f3f4f4473a11a5c6284/projects/libpng-proto/libpng_transforms_fuzzer.cc#L73
   const size_t kMaxImageSize = 1 << 20;
   const size_t kMaxHeight = 1 << 10;
   if ((uint64_t)width * height > kMaxImageSize) return 0;
