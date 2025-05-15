@@ -216,8 +216,9 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
 
   // image.format = PNG_FORMAT_RGBA | PNG_FORMAT_FLAG_COLORMAP;
   image.format = (size >= 28 ? (*(int*)&data[size-20]) : PNG_FORMAT_RGBA) | PNG_FORMAT_FLAG_COLORMAP;
+  // colormap and background color from libpng-proto:
+  // https://github.com/google/oss-fuzz/blob/c8a9d0f7b453102115883f3f4f4473a11a5c6284/projects/libpng-proto/libpng_transforms_fuzzer.cc#L122
   const size_t kColorMapSize = 256 * 4;
-  // Do we need to take color & colormap from the fuzzed input?
   png_color color = {1, 2, 3};
   png_uint_16 colormap[256*4] = {0};
   for (size_t i = 0; i < kColorMapSize; i++)
